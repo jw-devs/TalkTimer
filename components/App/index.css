@@ -1,0 +1,100 @@
+body, html{
+  background-color: #181818;
+}
+.controller{
+  width: 100%;
+  max-width: 540px;
+  height: auto;
+  position: relative;
+  margin-left: auto;
+  margin-right: auto;
+}
+.controller ul{
+  width: 100%;
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+.controller ul li{
+  width: 33.333333333%;
+  height: 140px;
+  list-style-type: none;
+  background-color: black;
+  float: left;
+  padding: 0;
+  margin: 0;
+}
+.controller ul li span{
+  display: block;
+  width: 100%;
+  height: 140px;
+  vertical-align: middle;
+  line-height: 140px;
+  text-align: center;
+  color: white;
+  font-size: 40px;
+  font-weight: bolder;
+}
+.controller .timeButton{
+  cursor: pointer;
+}
+.controller .timeButton:hover{
+  opacity: 0.8;
+}
+.controller .buttonRed{
+  background-color: #B72B2B;
+  border-color: black;
+  border-width: 1px;
+  border-style: solid;
+}
+.controller .buttonBlue{
+  background-color: #343F7B;
+}
+.controller .buttonGreen{
+  background-color: #3C7000;
+}
+.controller .timeStart{
+  display: block;
+  width: 100%;
+  height: 100px;
+
+  position: relative;
+  float: left;
+  cursor: pointer;
+}
+.controller .timeStart:hover{
+  opacity: 0.8;
+}
+.controller .timeStart span{
+  display: block;
+  width: 100%;
+  height: 100px;
+  vertical-align: middle;
+  line-height: 100px;
+  text-align: center;
+  color: white;
+  font-size: 40px;
+  font-weight: bolder;
+  border: none;
+}
+.controller .clock{
+  display: block;
+  width: 100%;
+  height: 160px;
+  background-color: #000000;
+  position: relative;
+  float: left;
+}
+.controller .clock .time{
+  display: block;
+  width: 100%;
+  height: 160px;
+  vertical-align: middle;
+  line-height: 160px;
+  text-align: center;
+  color: white;
+  font-size: 80px;
+  letter-spacing: 5px;
+  font-weight: bolder;
+  border: none;
+}
