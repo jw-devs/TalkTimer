@@ -29,6 +29,7 @@
     "bootstrap": "^3.3.6",
     "jquery": "^1.11.3",
     "react": "^0.14.6",
+    "react-cookie": "^0.4.3",
     "react-dom": "^0.14.6",
     "simple-peer": "^5.11.7"
   }

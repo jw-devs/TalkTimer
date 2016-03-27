@@ -1,3 +1,4 @@
+import "./style.css";
 import React, { Component } from "react";
 import SimplePeer from "simple-peer";
 
@@ -13,24 +14,27 @@ export default class Clock extends Component {
     this.state = {
       time: 0,
       running: false,
-      overdrawn: false
+      overdrawn: false,
+      room: this.props.room,
     };
   }
 
   componentDidMount() {
 
-    console.log("Clock init");
-
     drone = this.props.drone;
-
+    console.log("drone open");
     drone.on('open', (error) => {
-
-      var room = drone.subscribe('versi01');
+      console.log("drone open");
+      console.log("ClockRoom:" + this.state.room.toString());
+      var room = drone.subscribe(this.state.room.toString());
+      console.log(room);
       room.on('open', (error) => {
+
+        console.log("Room open");
+
         if (error) return console.error(error);
       });
       room.on('data', (data) => {
-        console.log(data);
         if (data.type == "time"){
           this.setState({ time: data.time });
         }else if (data.type == "add_time"){
@@ -47,6 +51,7 @@ export default class Clock extends Component {
       });
     });
 
+
   }
 
   startCountdown(){
@@ -56,7 +61,7 @@ export default class Clock extends Component {
   }
 
   stopCountdown(){
-    this.setState({ running: false });
+    this.setState({ running: false, time: 0 });
     this.props.onStop();
   }
 
@@ -87,19 +92,26 @@ export default class Clock extends Component {
     return ((overdrawn ? "+" : "") + (h > 0 ? h + ":" + (m < 10 ? "0" : "") : "") + m + ":" + (s < 10 ? "0" : "") + s);
   }
 
+  isOverdrawn(t){
+    if (t < 0){
+      return true
+    }else{
+      return false;
+    }
+  }
+
   render() {
 
       let vorzeichen = "";
-      if (this.state.overdrawn){
-        vorzeichen = "+";
+      let status = "";
+      if (this.isOverdrawn(this.state.time)){
+        status = "overdrawn";
       }
 
       return (
-
-        <div className="clock">
-          <span className="time">{vorzeichen}{ this.secondsToHms(this.state.time) }</span>
+        <div className={"clock " + status}>
+          <span className="time color-white">{ this.secondsToHms(this.state.time) }</span>
         </div>
-
       );
   }
 }

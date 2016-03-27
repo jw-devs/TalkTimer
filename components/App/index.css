@@ -77,6 +77,30 @@ body, html{
   font-weight: bolder;
   border: none;
 }
+.controller .roomID{
+  display: block;
+  width: 100%;
+  position: relative;
+  float: left;
+}
+.controller .roomID p{
+  margin-top: 20px;
+  padding-left: 20px;
+  font-size: 20px;
+  color: white;
+  margin-bottom: 0;
+  opacity: 0.6;
+}
+.controller .roomID span{
+  margin-top: 0;
+  display: block;
+  width: 100%;
+  text-align: center;
+  color: white;
+  font-size: 40px;
+  font-weight: bolder;
+  letter-spacing: 20px;
+}
 .controller .clock{
   display: block;
   width: 100%;
@@ -92,9 +116,16 @@ body, html{
   vertical-align: middle;
   line-height: 160px;
   text-align: center;
-  color: white;
   font-size: 80px;
   letter-spacing: 5px;
   font-weight: bolder;
   border: none;
+}
+*{
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }

@@ -58,7 +58,7 @@
 
 	var _reactDom2 = _interopRequireDefault(_reactDom);
 
-	var _Timer = __webpack_require__(217);
+	var _Timer = __webpack_require__(221);
 
 	var _Timer2 = _interopRequireDefault(_Timer);
 
@@ -39269,6 +39269,8 @@
 	  value: true
 	});
 
+	__webpack_require__(217);
+
 	var _react = __webpack_require__(24);
 
 	var _react2 = _interopRequireDefault(_react);
@@ -39299,7 +39301,8 @@
 	    _this.state = {
 	      time: 0,
 	      running: false,
-	      overdrawn: false
+	      overdrawn: false,
+	      room: _this.props.room
 	    };
 	    return _this;
 	  }
@@ -39309,18 +39312,20 @@
 	    value: function componentDidMount() {
 	      var _this2 = this;
 
-	      console.log("Clock init");
-
 	      drone = this.props.drone;
-
+	      console.log("drone open");
 	      drone.on('open', function (error) {
-
-	        var room = drone.subscribe('versi01');
+	        console.log("drone open");
+	        console.log("ClockRoom:" + _this2.state.room.toString());
+	        var room = drone.subscribe(_this2.state.room.toString());
+	        console.log(room);
 	        room.on('open', function (error) {
+
+	          console.log("Room open");
+
 	          if (error) return console.error(error);
 	        });
 	        room.on('data', function (data) {
-	          console.log(data);
 	          if (data.type == "time") {
 	            _this2.setState({ time: data.time });
 	          } else if (data.type == "add_time") {
@@ -39345,7 +39350,7 @@
 	  }, {
 	    key: "stopCountdown",
 	    value: function stopCountdown() {
-	      this.setState({ running: false });
+	      this.setState({ running: false, time: 0 });
 	      this.props.onStop();
 	    }
 	  }, {
@@ -39378,21 +39383,30 @@
 	      return (overdrawn ? "+" : "") + (h > 0 ? h + ":" + (m < 10 ? "0" : "") : "") + m + ":" + (s < 10 ? "0" : "") + s;
 	    }
 	  }, {
+	    key: "isOverdrawn",
+	    value: function isOverdrawn(t) {
+	      if (t < 0) {
+	        return true;
+	      } else {
+	        return false;
+	      }
+	    }
+	  }, {
 	    key: "render",
 	    value: function render() {
 
 	      var vorzeichen = "";
-	      if (this.state.overdrawn) {
-	        vorzeichen = "+";
+	      var status = "";
+	      if (this.isOverdrawn(this.state.time)) {
+	        status = "overdrawn";
 	      }
 
 	      return _react2.default.createElement(
 	        "div",
-	        { className: "clock" },
+	        { className: "clock " + status },
 	        _react2.default.createElement(
 	          "span",
-	          { className: "time" },
-	          vorzeichen,
+	          { className: "time color-white" },
 	          this.secondsToHms(this.state.time)
 	        )
 	      );
@@ -39408,6 +39422,305 @@
 /* 217 */
 /***/ function(module, exports, __webpack_require__) {
 
+	// style-loader: Adds some css to the DOM by adding a <style> tag
+
+	// load the styles
+	var content = __webpack_require__(218);
+	if(typeof content === 'string') content = [[module.id, content, '']];
+	// add the styles to the DOM
+	var update = __webpack_require__(23)(content, {});
+	if(content.locals) module.exports = content.locals;
+	// Hot Module Replacement
+	if(false) {
+		// When the styles change, update the <style> tags
+		if(!content.locals) {
+			module.hot.accept("!!./../../node_modules/css-loader/index.js!./style.css", function() {
+				var newContent = require("!!./../../node_modules/css-loader/index.js!./style.css");
+				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
+				update(newContent);
+			});
+		}
+		// When the module is disposed, remove the <style> tags
+		module.hot.dispose(function() { update(); });
+	}
+
+/***/ },
+/* 218 */
+/***/ function(module, exports, __webpack_require__) {
+
+	exports = module.exports = __webpack_require__(17)();
+	// imports
+
+
+	// module
+	exports.push([module.id, ".color-red{\n  color: #B72B2B;\n}\n.color-white{\n  color: white;\n}\n.overdrawn{\n  -moz-transition:all .5s ease-in;\n  -o-transition:all .5s ease-in;\n  -webkit-transition:all .5s ease-in;\n  background-color: #B72B2B!important;\n}\n.time{\n\n}\n", ""]);
+
+	// exports
+
+
+/***/ },
+/* 219 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var cookie = __webpack_require__(220);
+
+	var _rawCookie = {};
+	var _res = undefined;
+
+	function load(name, doNotParse) {
+	  var cookies = (typeof document === 'undefined') ? _rawCookie : cookie.parse(document.cookie);
+	  var cookieVal = cookies && cookies[name];
+
+	  if (!doNotParse) {
+	    try {
+	      cookieVal = JSON.parse(cookieVal);
+	    } catch(e) {
+	      // Not serialized object
+	    }
+	  }
+
+	  return cookieVal;
+	}
+
+	function save(name, val, opt) {
+	  _rawCookie[name] = val;
+
+	  // allow you to work with cookies as objects.
+	  if (typeof val === 'object') {
+	    _rawCookie[name] = JSON.stringify(val);
+	  }
+
+	  // Cookies only work in the browser
+	  if (typeof document !== 'undefined') {
+	    document.cookie = cookie.serialize(name, _rawCookie[name], opt);
+	  }
+
+	  if (_res && _res.cookie) {
+	    _res.cookie(name, val, opt);
+	  }
+	}
+
+	function remove(name, opt) {
+	  delete _rawCookie[name];
+
+	  if (typeof opt === 'undefined') {
+	    opt = {};
+	  } else if (typeof opt === 'string') {
+	    // Will be deprecated in future versions
+	    opt = { path: opt };
+	  }
+
+	  if (typeof document !== 'undefined') {
+	    opt.expires = new Date(1970, 1, 1, 0, 0, 1);
+	    document.cookie = cookie.serialize(name, '', opt);
+	  }
+
+	  if (_res && _res.clearCookie) {
+	    _res.clearCookie(name, opt);
+	  }
+	}
+
+	function setRawCookie(rawCookie) {
+	  if (rawCookie) {
+	    _rawCookie = cookie.parse(rawCookie);
+	  } else {
+	    _rawCookie = {};
+	  }
+	}
+
+	function plugToRequest(req, res) {
+	  if (req.cookie) {
+	    _rawCookie = req.cookie;
+	  } else if (req.headers && req.headers.cookie) {
+	    setRawCookie(req.headers.cookie);
+	  } else {
+	    _rawCookie = {};
+	  }
+
+	  _res = res;
+	}
+
+	var reactCookie = {
+	  load: load,
+	  save: save,
+	  remove: remove,
+	  setRawCookie: setRawCookie,
+	  plugToRequest: plugToRequest
+	};
+
+	if (typeof window !== 'undefined') {
+	  window['reactCookie'] = reactCookie;
+	}
+
+	module.exports = reactCookie;
+
+
+/***/ },
+/* 220 */
+/***/ function(module, exports) {
+
+	/*!
+	 * cookie
+	 * Copyright(c) 2012-2014 Roman Shtylman
+	 * Copyright(c) 2015 Douglas Christopher Wilson
+	 * MIT Licensed
+	 */
+
+	/**
+	 * Module exports.
+	 * @public
+	 */
+
+	exports.parse = parse;
+	exports.serialize = serialize;
+
+	/**
+	 * Module variables.
+	 * @private
+	 */
+
+	var decode = decodeURIComponent;
+	var encode = encodeURIComponent;
+
+	/**
+	 * RegExp to match field-content in RFC 7230 sec 3.2
+	 *
+	 * field-content = field-vchar [ 1*( SP / HTAB ) field-vchar ]
+	 * field-vchar   = VCHAR / obs-text
+	 * obs-text      = %x80-FF
+	 */
+
+	var fieldContentRegExp = /^[\u0009\u0020-\u007e\u0080-\u00ff]+$/;
+
+	/**
+	 * Parse a cookie header.
+	 *
+	 * Parse the given cookie header string into an object
+	 * The object has the various cookies as keys(names) => values
+	 *
+	 * @param {string} str
+	 * @param {object} [options]
+	 * @return {object}
+	 * @public
+	 */
+
+	function parse(str, options) {
+	  if (typeof str !== 'string') {
+	    throw new TypeError('argument str must be a string');
+	  }
+
+	  var obj = {}
+	  var opt = options || {};
+	  var pairs = str.split(/; */);
+	  var dec = opt.decode || decode;
+
+	  pairs.forEach(function(pair) {
+	    var eq_idx = pair.indexOf('=')
+
+	    // skip things that don't look like key=value
+	    if (eq_idx < 0) {
+	      return;
+	    }
+
+	    var key = pair.substr(0, eq_idx).trim()
+	    var val = pair.substr(++eq_idx, pair.length).trim();
+
+	    // quoted values
+	    if ('"' == val[0]) {
+	      val = val.slice(1, -1);
+	    }
+
+	    // only assign once
+	    if (undefined == obj[key]) {
+	      obj[key] = tryDecode(val, dec);
+	    }
+	  });
+
+	  return obj;
+	}
+
+	/**
+	 * Serialize data into a cookie header.
+	 *
+	 * Serialize the a name value pair into a cookie string suitable for
+	 * http headers. An optional options object specified cookie parameters.
+	 *
+	 * serialize('foo', 'bar', { httpOnly: true })
+	 *   => "foo=bar; httpOnly"
+	 *
+	 * @param {string} name
+	 * @param {string} val
+	 * @param {object} [options]
+	 * @return {string}
+	 * @public
+	 */
+
+	function serialize(name, val, options) {
+	  var opt = options || {};
+	  var enc = opt.encode || encode;
+
+	  if (!fieldContentRegExp.test(name)) {
+	    throw new TypeError('argument name is invalid');
+	  }
+
+	  var value = enc(val);
+
+	  if (value && !fieldContentRegExp.test(value)) {
+	    throw new TypeError('argument val is invalid');
+	  }
+
+	  var pairs = [name + '=' + value];
+
+	  if (null != opt.maxAge) {
+	    var maxAge = opt.maxAge - 0;
+	    if (isNaN(maxAge)) throw new Error('maxAge should be a Number');
+	    pairs.push('Max-Age=' + maxAge);
+	  }
+
+	  if (opt.domain) {
+	    if (!fieldContentRegExp.test(opt.domain)) {
+	      throw new TypeError('option domain is invalid');
+	    }
+
+	    pairs.push('Domain=' + opt.domain);
+	  }
+
+	  if (opt.path) {
+	    if (!fieldContentRegExp.test(opt.path)) {
+	      throw new TypeError('option path is invalid');
+	    }
+
+	    pairs.push('Path=' + opt.path);
+	  }
+
+	  if (opt.expires) pairs.push('Expires=' + opt.expires.toUTCString());
+	  if (opt.httpOnly) pairs.push('HttpOnly');
+	  if (opt.secure) pairs.push('Secure');
+
+	  return pairs.join('; ');
+	}
+
+	/**
+	 * Try decoding a string using a decoding function.
+	 *
+	 * @param {string} str
+	 * @param {function} decode
+	 * @private
+	 */
+
+	function tryDecode(str, decode) {
+	  try {
+	    return decode(str);
+	  } catch (e) {
+	    return str;
+	  }
+	}
+
+
+/***/ },
+/* 221 */
+/***/ function(module, exports, __webpack_require__) {
+
 	"use strict";
 
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -39416,7 +39729,7 @@
 	  value: true
 	});
 
-	__webpack_require__(218);
+	__webpack_require__(222);
 
 	var _react = __webpack_require__(24);
 
@@ -39429,6 +39742,10 @@
 	var _Clock = __webpack_require__(216);
 
 	var _Clock2 = _interopRequireDefault(_Clock);
+
+	var _reactCookie = __webpack_require__(219);
+
+	var _reactCookie2 = _interopRequireDefault(_reactCookie);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -39443,32 +39760,102 @@
 	var Timer = function (_Component) {
 	  _inherits(Timer, _Component);
 
-	  function Timer() {
+	  function Timer(props) {
 	    _classCallCheck(this, Timer);
 
-	    return _possibleConstructorReturn(this, Object.getPrototypeOf(Timer).apply(this, arguments));
+	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Timer).call(this, props));
+
+	    _this.state = {
+	      kennung: null,
+	      room: null,
+	      onTouch: false
+	    };
+	    return _this;
 	  }
 
 	  _createClass(Timer, [{
 	    key: "componentDidMount",
 	    value: function componentDidMount() {
-
 	      console.log("INIT");
+	      var room = _reactCookie2.default.load('room');
+	      if (room) {
+	        this.setState({ room: room });
+	      }
+	    }
+	  }, {
+	    key: "getKennung",
+	    value: function getKennung() {
 
-	      drone.on('open', function (error) {});
+	      if (this.state.kennung !== null && this.state.kennung.length == 6) {
+	        this.setState({ room: this.state.kennung });
+	        _reactCookie2.default.save('room', this.state.kennung, { path: '/', maxAge: 3600 * 24 * 365 * 10 });
+	        location.reload();
+	      }
+	    }
+	  }, {
+	    key: "resetRoom",
+	    value: function resetRoom() {
+	      console.log("resetRoom");
+	      if (confirm("Möchtest du wirklich die Kennung '" + this.state.room + "' verlassen?")) {
+	        this.setState({ room: null });
+	        _reactCookie2.default.save('room', null, { path: '/', maxAge: 3600 * 24 * 365 * 10 });
+	      }
+	    }
+	  }, {
+	    key: "touchStart",
+	    value: function touchStart() {
+	      this.setState({ onTouch: true });
+	    }
+	  }, {
+	    key: "touchEnd",
+	    value: function touchEnd() {
+	      this.setState({ onTouch: false });
 	    }
 	  }, {
 	    key: "render",
 	    value: function render() {
+	      var _this2 = this;
+
+	      var content = undefined;
+	      if (this.state.room) {
+	        content = _react2.default.createElement(
+	          "div",
+	          { className: "timer" },
+	          _react2.default.createElement(_Clock2.default, { room: this.state.room, drone: drone }),
+	          _react2.default.createElement(
+	            "button",
+	            { "class": "setting", type: "button", onClick: this.resetRoom.bind(this) },
+	            "Raum verlassen"
+	          )
+	        );
+	      } else {
+	        content = _react2.default.createElement(
+	          "div",
+	          { className: "timer" },
+	          _react2.default.createElement(
+	            "p",
+	            null,
+	            "Bitte 6 stellige Kennung eingeben:"
+	          ),
+	          _react2.default.createElement("input", { className: "kennung", type: "tel", name: "kennung", min: "1000000", max: "9999999", placeholder: "000000", onChange: function onChange(event) {
+	              return _this2.setState({ kennung: event.target.value });
+	            } }),
+	          _react2.default.createElement(
+	            "div",
+	            { onClick: this.getKennung.bind(this), className: "buttonOkay" },
+	            _react2.default.createElement(
+	              "span",
+	              null,
+	              "Okay"
+	            )
+	          )
+	        );
+	      }
 
 	      return _react2.default.createElement(
 	        "main",
 	        null,
-	        _react2.default.createElement(
-	          "div",
-	          { className: "timer" },
-	          _react2.default.createElement(_Clock2.default, { drone: drone })
-	        )
+	        content
 	      );
 	    }
 	  }]);
@@ -39479,13 +39866,13 @@
 	exports.default = Timer;
 
 /***/ },
-/* 218 */
+/* 222 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
 	// load the styles
-	var content = __webpack_require__(219);
+	var content = __webpack_require__(223);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
 	var update = __webpack_require__(23)(content, {});
@@ -39505,7 +39892,7 @@
 	}
 
 /***/ },
-/* 219 */
+/* 223 */
 /***/ function(module, exports, __webpack_require__) {
 
 	exports = module.exports = __webpack_require__(17)();
@@ -39513,7 +39900,7 @@
 
 
 	// module
-	exports.push([module.id, ".timer .clock{\n  display: block;\n  width: 100%;\n  height: 160px;\n  background-color: #000000;\n  position: relative;\n  float: left;\n}\n.timer .clock .time{\n  display: block;\n  width: 100%;\n  height: 160px;\n  vertical-align: middle;\n  line-height: 160px;\n  text-align: center;\n  color: white;\n  font-size: 80px;\n  font-weight: bolder;\n  border: none;\n}\n", ""]);
+	exports.push([module.id, "html, body{\n  width: 100%;\n  height: 100%;\n  padding: 0;\n  margin: 0;\n}\n#container{\n  width: 100%;\n  height: 100%;\n  padding: 0;\n  margin: 0;\n}\nmain{\n  width: 100%;\n  height: 100%;\n}\n.timer{\n  width: 100%;\n  height: 100%;\n}\n.timer .clock{\n  display: block;\n  width: 100%;\n  height: 100%;\n  background-color: #000000;\n  position: relative;\n  float: left;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n}\n.timer .clock .time{\n  width: 100%;\n  height: auto;\n  vertical-align: middle;\n  text-align: center;\n  font-size: 30vw;\n  font-weight: bolder;\n  border: none;\n  -webkit-box-flex: 0;\n  -webkit-flex: none;\n  -ms-flex: none;\n  flex: none;\n}\n.timer .kennung{\n  display: block;\n  width: 100%;\n  height: 100px;\n  background-color: black;\n  color: white;\n  position: relative;\n  float: left;\n  font-size: 40px;\n  letter-spacing: 20px;\n  text-align: center;\n}\n.timer .buttonOkay{\n  width: 100%;\n  background-color: #343F7B;\n  height: 100px;\n  float: left;\n  position: relative;\n  cursor: pointer;\n}\n.timer .buttonOkay:hover{\n  opacity: 0.8;\n}\n.timer .buttonOkay span{\n  display: block;\n  line-height: 100px;\n  height: 100px;\n  vertical-align: middle;\n  text-align: center;;\n  width: 100%;\n  color: white;\n  font-size: 40px;\n}\n", ""]);
 
 	// exports
 

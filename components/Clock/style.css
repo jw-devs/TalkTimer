@@ -1,0 +1,15 @@
+.color-red{
+  color: #B72B2B;
+}
+.color-white{
+  color: white;
+}
+.overdrawn{
+  -moz-transition:all .5s ease-in;
+  -o-transition:all .5s ease-in;
+  -webkit-transition:all .5s ease-in;
+  background-color: #B72B2B!important;
+}
+.time{
+
+}
