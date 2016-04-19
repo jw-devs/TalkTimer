@@ -18,16 +18,17 @@ export default class App extends Component {
 
     this.state = {
       running: false,
-      room: room
+      room: room.toString()
     };
   }
 
   componentDidMount() {
     console.log("APP INIT");
-
-    console.log("RoomID: " + this.state.room);
+    drone.on('open', (error) =>  {
+      console.log("Drone open", error);
+      console.log("RoomID: " + this.state.room);
+    });
   }
-
 
   submitAddTime(time){
     drone.publish({
@@ -91,16 +92,13 @@ export default class App extends Component {
 
   render() {
 
-
       let control_button = <div className="timeStart buttonGreen" onClick={ ::this.submitStart }><span>Start</span></div>;
       if (this.state.running){
         control_button = <div className="timeStart buttonBlue" onClick={ ::this.submitStop }><span>Stopp</span></div>;
       }
 
-
       return (
         <main>
-
           <div>
             <div className="controller">
               <Clock drone={ drone } room={ this.state.room } onStart={ (event) => this.setState({ running: true }) } onStop={ (event) => this.setState({ running: false }) }/>
@@ -113,14 +111,11 @@ export default class App extends Component {
                 <li className="timeButton buttonRed" onClick={::this.add10m}><span>+10m</span></li>
               </ul>
               { control_button }
-
               <div className="roomID">
                 <p>Kennung</p>
                 <span>{ this.state.room }</span>
               </div>
             </div>
-
-
           </div>
         </main>
       );

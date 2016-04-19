@@ -12,24 +12,22 @@ export default class Timer extends Component {
 
   this.state = {
     kennung: null,
-    room: null,
-    onTouch: false
+    room: null
   };
 }
 
 
   componentDidMount() {
-    console.log("INIT");
     let room =  cookie.load('room');
     if (room){
-      this.setState({ room: room });
+      this.setState({ room: room.toString() });
     }
   }
 
   getKennung(){
 
     if (this.state.kennung !== null && this.state.kennung.length == 6){
-      this.setState({ room: this.state.kennung });
+      this.setState({ room: this.state.kennung.toString() });
       cookie.save('room', this.state.kennung, { path: '/', maxAge: (3600 * 24 * 365 * 10) });
       location.reload();
     }
@@ -43,15 +41,6 @@ export default class Timer extends Component {
       cookie.save('room', null, { path: '/', maxAge: (3600 * 24 * 365 * 10) });
     }
   }
-
-  touchStart(){
-    this.setState({ onTouch: true });
-  }
-
-  touchEnd(){
-    this.setState({ onTouch: false });
-  }
-
 
 
 

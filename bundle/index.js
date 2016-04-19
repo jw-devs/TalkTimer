@@ -33566,7 +33566,7 @@
 
 	    _this.state = {
 	      running: false,
-	      room: room
+	      room: room.toString()
 	    };
 	    return _this;
 	  }
@@ -33574,9 +33574,13 @@
 	  _createClass(App, [{
 	    key: "componentDidMount",
 	    value: function componentDidMount() {
-	      console.log("APP INIT");
+	      var _this2 = this;
 
-	      console.log("RoomID: " + this.state.room);
+	      console.log("APP INIT");
+	      drone.on('open', function (error) {
+	        console.log("Drone open", error);
+	        console.log("RoomID: " + _this2.state.room);
+	      });
 	    }
 	  }, {
 	    key: "submitAddTime",
@@ -33651,7 +33655,7 @@
 	  }, {
 	    key: "render",
 	    value: function render() {
-	      var _this2 = this;
+	      var _this3 = this;
 
 	      var control_button = _react2.default.createElement(
 	        "div",
@@ -33684,9 +33688,9 @@
 	            "div",
 	            { className: "controller" },
 	            _react2.default.createElement(_Clock2.default, { drone: drone, room: this.state.room, onStart: function onStart(event) {
-	                return _this2.setState({ running: true });
+	                return _this3.setState({ running: true });
 	              }, onStop: function onStop(event) {
-	                return _this2.setState({ running: false });
+	                return _this3.setState({ running: false });
 	              } }),
 	            _react2.default.createElement(
 	              "ul",
@@ -39574,10 +39578,6 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _simplePeer = __webpack_require__(185);
-
-	var _simplePeer2 = _interopRequireDefault(_simplePeer);
-
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -39601,26 +39601,31 @@
 	      time: 0,
 	      running: false,
 	      overdrawn: false,
-	      room: _this.props.room
+	      room: _this.props.room,
+	      realtime: _this.milliseconds(),
+	      realClock: _this.getRealClock()
 	    };
 	    return _this;
 	  }
 
 	  _createClass(Clock, [{
+	    key: "milliseconds",
+	    value: function milliseconds() {
+	      var d = new Date();
+	      return d.getTime();
+	    }
+	  }, {
 	    key: "componentDidMount",
 	    value: function componentDidMount() {
 	      var _this2 = this;
 
 	      drone = this.props.drone;
-	      console.log("drone open");
-	      drone.on('open', function (error) {
-	        console.log("drone open");
-	        console.log("ClockRoom:" + _this2.state.room.toString());
-	        var room = drone.subscribe(_this2.state.room.toString());
-	        console.log(room);
-	        room.on('open', function (error) {
 
-	          console.log("Room open");
+	      drone.on('open', function (error) {
+
+	        var room = drone.subscribe(_this2.state.room.toString());
+
+	        room.on('open', function (error) {
 
 	          if (error) return console.error(error);
 	        });
@@ -39628,7 +39633,6 @@
 	          if (data.type == "time") {
 	            _this2.setState({ time: data.time });
 	          } else if (data.type == "add_time") {
-
 	            var time = _this2.state.time + data.time;
 	            _this2.setState({ time: time });
 	          } else if (data.type == "start") {
@@ -39642,14 +39646,14 @@
 	  }, {
 	    key: "startCountdown",
 	    value: function startCountdown() {
-	      this.setState({ running: true, overdrawn: false });
+	      this.setState({ running: true, overdrawn: false, realtime: this.milliseconds() });
 	      this.tick();
 	      this.props.onStart();
 	    }
 	  }, {
 	    key: "stopCountdown",
 	    value: function stopCountdown() {
-	      this.setState({ running: false, time: 0 });
+	      this.setState({ running: false, time: 0, realtime: this.milliseconds() });
 	      this.props.onStop();
 	    }
 	  }, {
@@ -39659,11 +39663,25 @@
 	        var newtime = undefined;
 	        newtime = this.state.time - 1;
 
-	        this.setState({ time: newtime });
-	        console.log(newtime);
+	        var dif = this.milliseconds() - this.state.realtime;
+	        if (dif >= 2000) {
+	          Math.round(newtime = newtime - dif / 1000);
+	        }
+
+	        this.setState({ time: newtime, realtime: this.milliseconds() });
 
 	        setTimeout(function () {
 	          this.tick();
+	        }.bind(this), 1000);
+	      }
+	    }
+	  }, {
+	    key: "tickClock",
+	    value: function tickClock() {
+	      this.setState({ realClock: this.getRealClock() });
+	      if (this.state.touch) {
+	        setTimeout(function () {
+	          this.tickClock();
 	        }.bind(this), 1000);
 	      }
 	    }
@@ -39682,6 +39700,15 @@
 	      return (overdrawn ? "+" : "") + (h > 0 ? h + ":" + (m < 10 ? "0" : "") : "") + m + ":" + (s < 10 ? "0" : "") + s;
 	    }
 	  }, {
+	    key: "getRealClock",
+	    value: function getRealClock() {
+	      var currentTime = new Date();
+	      var hours = currentTime.getHours();
+	      var minutes = currentTime.getMinutes();
+	      var seconds = currentTime.getSeconds();
+	      return hours + ":" + minutes + ":" + seconds;
+	    }
+	  }, {
 	    key: "isOverdrawn",
 	    value: function isOverdrawn(t) {
 	      if (t < 0) {
@@ -39691,8 +39718,23 @@
 	      }
 	    }
 	  }, {
+	    key: "touchStart",
+	    value: function touchStart() {
+	      var _this3 = this;
+
+	      this.setState({ touch: true }, function () {
+	        _this3.tickClock();
+	      });
+	    }
+	  }, {
+	    key: "touchEnd",
+	    value: function touchEnd() {
+	      this.setState({ touch: false });
+	    }
+	  }, {
 	    key: "render",
 	    value: function render() {
+	      var _this4 = this;
 
 	      var vorzeichen = "";
 	      var status = "";
@@ -39700,7 +39742,7 @@
 	        status = "overdrawn";
 	      }
 
-	      return _react2.default.createElement(
+	      var content = _react2.default.createElement(
 	        "div",
 	        { className: "clock " + status },
 	        _react2.default.createElement(
@@ -39708,6 +39750,28 @@
 	          { className: "time color-white" },
 	          this.secondsToHms(this.state.time)
 	        )
+	      );
+
+	      if (this.state.touch) {
+	        content = _react2.default.createElement(
+	          "div",
+	          { className: "clock realClock" },
+	          _react2.default.createElement(
+	            "span",
+	            { className: "time" },
+	            this.state.realClock
+	          )
+	        );
+	      }
+
+	      return _react2.default.createElement(
+	        "div",
+	        { className: "wrapper", onTouchStart: function onTouchStart() {
+	            return _this4.touchStart();
+	          }, onTouchEnd: function onTouchEnd() {
+	            return _this4.touchEnd();
+	          } },
+	        content
 	      );
 	    }
 	  }]);
@@ -39752,7 +39816,7 @@
 
 
 	// module
-	exports.push([module.id, ".color-red{\n  color: #B72B2B;\n}\n.color-white{\n  color: white;\n}\n.overdrawn{\n  -moz-transition:all .5s ease-in;\n  -o-transition:all .5s ease-in;\n  -webkit-transition:all .5s ease-in;\n  background-color: #B72B2B!important;\n}\n.time{\n\n}\n", ""]);
+	exports.push([module.id, ".color-red{\n  color: #B72B2B;\n}\n.color-white{\n  color: white;\n}\n.color-black{\n  color: black;\n}\n.overdrawn{\n  -moz-transition:all .5s ease-in;\n  -o-transition:all .5s ease-in;\n  -webkit-transition:all .5s ease-in;\n  background-color: #B72B2B!important;\n}\n.time{\n  font-family: \"Helvetica Neue\", Helvetica, Arial, sans-serif;\n  -webkit-touch-callout: none!important;\n  -webkit-user-select: none!important;\n  -khtml-user-select: none!important;\n  -moz-user-select: none!important;\n  -ms-user-select: none!important;\n  user-select: none!important;\n}\n", ""]);
 
 	// exports
 
